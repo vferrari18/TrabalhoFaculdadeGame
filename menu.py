@@ -1,64 +1,89 @@
-import pygame  # Importa o motor gráfico
-import sys  # Importa funções de encerramento do sistema
-from score_manager import ler_scores  # Importa a função que lê o ranking do arquivo
+import pygame  # Importa a biblioteca do jogo
+import sys  # Importa funções para fechar o programa
+from score_manager import ler_scores  # Importa a função que busca os pontos salvos
 
 
-def menu_principal():  # Função do menu que você já tinha
-    pygame.init()  # Inicializa o Pygame
-    tela = pygame.display.set_mode((800, 600))  # Define o tamanho da janela
-    fonte_menu = pygame.font.SysFont("Arial", 40, bold=True)  # Fonte das opções
-    fonte_inst = pygame.font.SysFont("Arial", 20)  # Fonte das instruções
+def exibir_ranking(tela):
+    fonte = pygame.font.SysFont("Arial", 40, bold=True)
+    fonte_lista = pygame.font.SysFont("Arial", 30)
 
-    # Define as áreas dos botões para o clique do mouse
-    btn_start = pygame.Rect(300, 220, 200, 50)
-    btn_pontos = pygame.Rect(300, 300, 200, 50)
-    btn_sair = pygame.Rect(300, 380, 200, 50)
-
-    while True:  # Loop do Menu
-        tela.fill((30, 30, 30))  # Fundo cinza escuro
-        mouse = pygame.mouse.get_pos()  # Localização do mouse
-
-        # Desenha os botões e muda a cor se o mouse estiver sobre eles
-        cor_s = (255, 255, 0) if btn_start.collidepoint(mouse) else (255, 255, 255)
-        cor_p = (255, 255, 0) if btn_pontos.collidepoint(mouse) else (255, 255, 255)
-        cor_x = (255, 255, 0) if btn_sair.collidepoint(mouse) else (255, 255, 255)
-
-        tela.blit(fonte_menu.render("START", True, cor_s), (340, 220))
-        tela.blit(fonte_menu.render("RANKING", True, cor_p), (320, 300))
-        tela.blit(fonte_menu.render("SAIR", True, cor_x), (355, 380))
-
-        # REQUISITO: Instruções de controle visíveis no menu
-        inst = fonte_inst.render("WASD: Mover | MOUSE: Atirar", True, (200, 200, 200))
-        tela.blit(inst, (280, 520))
-
-        for e in pygame.event.get():  # Captura eventos
-            if e.type == pygame.QUIT: pygame.quit(); sys.exit()
-            if e.type == pygame.MOUSEBUTTONDOWN:  # Se clicou
-                if btn_start.collidepoint(mouse): return "jogar"
-                if btn_pontos.collidepoint(mouse): return "pontos"
-                if btn_sair.collidepoint(mouse): pygame.quit(); sys.exit()
-
-        pygame.display.update()  # Atualiza o quadro
-
-
-def exibir_ranking(tela):  # Nova função para mostrar os melhores jogadores
-    fonte = pygame.font.SysFont("Arial", 30)  # Fonte para a lista
-    while True:  # Loop da tela de ranking
-        tela.fill((10, 10, 10))  # Fundo quase preto
-        scores = ler_scores()  # Busca a lista ordenada
+    while True:
+        tela.fill((10, 10, 10))
+        scores = ler_scores()
 
         titulo = fonte.render("TOP 5 MELHORES JOGADORES", True, (255, 255, 0))
-        tela.blit(titulo, (200, 50))
+        tela.blit(titulo, (1365 // 2 - titulo.get_width() // 2, 50))
 
-        # Mostra apenas os 5 melhores
         for i, item in enumerate(scores[:5]):
-            txt = f"{i + 1}º - {item['nome']}: {item['kills']} Kills"
-            tela.blit(fonte.render(txt, True, (255, 255, 255)), (250, 150 + (i * 50)))
+            texto = f"{i + 1}º - {item['nome']}: {item['kills']} Kills"
+            img_texto = fonte_lista.render(texto, True, (255, 255, 255))
+            tela.blit(img_texto, (1365 // 2 - 150, 150 + (i * 60)))
 
-        tela.blit(fonte.render("Pressione ESC para voltar", True, (150, 150, 150)), (250, 500))
+        voltar = fonte_lista.render("Pressione ESC para voltar ao Menu", True, (150, 150, 150))
+        tela.blit(voltar, (1365 // 2 - voltar.get_width() // 2, 600))
 
-        for e in pygame.event.get():  # Captura saída da tela
-            if e.type == pygame.QUIT: pygame.quit(); sys.exit()
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit();
+                sys.exit()
             if e.type == pygame.KEYDOWN:
-                if e.key == pygame.K_ESCAPE: return  # Volta ao menu principal
+                if e.key == pygame.K_ESCAPE:
+                    return
+
+        pygame.display.update()
+
+
+def menu_principal():
+    LARGURA, ALTURA = 1365, 768
+    tela = pygame.display.set_mode((LARGURA, ALTURA))
+
+    try:
+        caminho_menu = "assets/menu/menu_bg.png"
+        fundo = pygame.image.load(caminho_menu).convert()
+        fundo = pygame.transform.scale(fundo, (LARGURA, ALTURA))
+    except:
+        fundo = pygame.Surface((LARGURA, ALTURA))
+        fundo.fill((0, 0, 50))
+
+    fonte_botao = pygame.font.SysFont("Arial", 35, bold=True)
+
+    # --- NOVO: Fonte para as instruções de teclas ---
+    fonte_instrucoes = pygame.font.SysFont("Arial", 11, bold=True)
+
+    btn_start_rect = pygame.Rect(530, 346, 300, 80)
+    btn_rank_rect = pygame.Rect(530, 475, 300, 60)
+    btn_sair_rect = pygame.Rect(530, 565, 300, 60)
+
+    while True:
+        tela.blit(fundo, (0, 0))
+        mouse = pygame.mouse.get_pos()
+
+        cor_s = (0, 255, 255) if btn_start_rect.collidepoint(mouse) else (255, 255, 255)
+        cor_r = (0, 255, 255) if btn_rank_rect.collidepoint(mouse) else (255, 255, 255)
+        cor_x = (255, 255, 0) if btn_sair_rect.collidepoint(mouse) else (255, 255, 255)
+
+        txt_start = fonte_botao.render("JOGAR", True, cor_s)
+        txt_rank = fonte_botao.render("RANKING", True, cor_r)
+        txt_sair = fonte_botao.render("SAIR", True, cor_x)
+
+        tela.blit(txt_start, (btn_start_rect.centerx - txt_start.get_width() // 2,
+                              btn_start_rect.centery - txt_start.get_height() // 2))
+        tela.blit(txt_rank, (btn_rank_rect.centerx - txt_rank.get_width() // 2,
+                             btn_rank_rect.centery - txt_rank.get_height() // 2))
+        tela.blit(txt_sair, (btn_sair_rect.centerx - txt_sair.get_width() // 2,
+                             btn_sair_rect.centery - txt_sair.get_height() // 2))
+
+        # --- NOVO: Desenho das Teclas no Rodapé ---
+        teclas_texto = "CONTROLES - WASD: MOVER | ESPAÇO: PULAR | MOUSE: ATIRAR"
+        img_teclas = fonte_instrucoes.render(teclas_texto, True, (200, 200, 200))
+        # Posiciona centralizado horizontalmente e a 720 pixels de altura
+        tela.blit(img_teclas, (LARGURA // 2 - img_teclas.get_width() // 2, 735))
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT: pygame.quit(); sys.exit()
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if btn_start_rect.collidepoint(mouse): return "jogar"
+                if btn_rank_rect.collidepoint(mouse): return "pontos"
+                if btn_sair_rect.collidepoint(mouse): pygame.quit(); sys.exit()
+
         pygame.display.update()

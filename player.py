@@ -12,7 +12,7 @@ class Jogador(pygame.sprite.Sprite):  # Define a classe herdando as funções de
         # Carrega a imagem dele parado e converte (convert_alpha mantém transparência)
         # Redimensionamos de 180x210 para 60x70 para caber melhor na tela de 800x600
         self.img_parado = pygame.image.load(caminho + "parado.png").convert_alpha()
-        self.img_parado = pygame.transform.scale(self.img_parado, (60, 70))
+        self.img_parado = pygame.transform.scale(self.img_parado, (120, 140))
 
         # Criamos uma lista para carregar os 6 quadros da corrida
         self.frames_corrida = []
@@ -20,7 +20,7 @@ class Jogador(pygame.sprite.Sprite):  # Define a classe herdando as funções de
             # Monta o nome: "assets/player/correndo1.png", "assets/player/correndo2.png", etc.
             img = pygame.image.load(f"{caminho}correndo{i}.png").convert_alpha()
             # Redimensiona cada quadro para manter o padrão
-            img = pygame.transform.scale(img, (60, 70))
+            img = pygame.transform.scale(img, (120, 140))
             self.frames_corrida.append(img)  # Adiciona à lista de animação
 
         # --- VARIÁVEIS DE CONTROLE DE ANIMAÇÃO ---
@@ -75,11 +75,12 @@ class Jogador(pygame.sprite.Sprite):  # Define a classe herdando as funções de
         self.vel_y += self.gravidade
         self.rect.y += self.vel_y
 
-        # Colisão com as plataformas (chão)
+        # Dentro do update do player, na parte de colisão:
         for p in plataformas:
             if self.rect.colliderect(p.rect):
-                if self.vel_y > 0:
-                    self.rect.bottom = p.rect.top
+                # Se o pé do jogador passar da 'linha_dos_pes' (68px dentro do chão)
+                if self.rect.bottom >= p.linha_dos_pes and self.vel_y > 0:
+                    self.rect.bottom = p.linha_dos_pes
                     self.vel_y = 0
                     self.no_chao = True
 

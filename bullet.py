@@ -1,34 +1,53 @@
 import pygame
 import math
+import os
 
 
 class Bala(pygame.sprite.Sprite):
-    # --- NOVO: O Molde da Bala ---
-    molde_imagem = None
+    # Molde original para não carregar o arquivo do HD toda vez que atirar
+    imagem_base = None
 
     def __init__(self, x, y, destino_x, destino_y):
         super().__init__()
 
-        # Se o molde da bala não existe ainda, cria ele na memória de vídeo
-        if Bala.molde_imagem is None:
-            Bala.molde_imagem = pygame.Surface((10, 5)).convert()
-            Bala.molde_imagem.fill((255, 255, 0))
+        caminho = "assets/projectile/bullet.png"
 
-            # Pega a imagem pronta sem gastar processamento
-        self.image = Bala.molde_imagem
+        # --- CARREGAMENTO DO MOLDE ---
+        if Bala.imagem_base is None:
+            if os.path.exists(caminho):
+                Bala.imagem_base = pygame.image.load(caminho).convert_alpha()
+                # Ajustamos o tamanho (ex: 30x15 para ser visível mas rápida)
+                Bala.imagem_base = pygame.transform.scale(Bala.imagem_base, (30, 15))
+            else:
+                # Se não achar a imagem, cria um rastro de luz ciano (Azul Água)
+                Bala.imagem_base = pygame.Surface((20, 5))
+                Bala.imagem_base.fill((0, 255, 255))
 
+        # --- CÁLCULO DE ÂNGULO E ROTAÇÃO ---
+        # Calcula o ângulo em radianos para a física
+        angulo_rad = math.atan2(destino_y - y, destino_x - x)
+        # Converte para graus para o Pygame girar a imagem (Pygame usa graus e sentido anti-horário)
+        angulo_graus = math.degrees(-angulo_rad)
+
+        # Cria a imagem rotacionada para esta bala específica
+        self.image = pygame.transform.rotate(Bala.imagem_base, angulo_graus)
         self.rect = self.image.get_rect(center=(x, y))
+
         self.dano = 30
 
-        # Matemática para mirar
-        angulo = math.atan2(destino_y - y, destino_x - x)
-        self.vx = math.cos(angulo) * 15
-        self.vy = math.sin(angulo) * 15
+        # Velocidade
+        velocidade_tiro = 22  # Um pouco mais rápida para compensar a tela grande
+        self.vx = math.cos(angulo_rad) * velocidade_tiro
+        self.vy = math.sin(angulo_rad) * velocidade_tiro
 
     def update(self):
+        # Move a bala
         self.rect.x += self.vx
         self.rect.y += self.vy
 
-        # Destrói a bala se sair da tela (mantendo a memória limpa)
-        if self.rect.right < 0 or self.rect.left > 800 or self.rect.bottom < 0 or self.rect.top > 600:
+        # Limites da tela 1365x768
+        if (self.rect.left > 1365 + 100 or
+                self.rect.right < -100 or
+                self.rect.top > 768 + 100 or
+                self.rect.bottom < -100):
             self.kill()

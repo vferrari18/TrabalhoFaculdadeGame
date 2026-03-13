@@ -1,34 +1,54 @@
-import pygame  # Importa o motor gráfico
-import random  # Importa o gerador de números aleatórios
+import pygame
+import random
+import os
 
 
 class Inimigo(pygame.sprite.Sprite):
-    # --- NOVO: Variável de Classe (O Molde) ---
-    # Fica fora do __init__, então pertence à "Ideia" de inimigo e não a um inimigo só
-    molde_imagem = None
-
-    def __init__(self, L, Y):
+    def __init__(self, L, topo_chao):
         super().__init__()
+        caminho = "assets/enemy/"
+        self.frames = []
 
-        # Se o molde ainda está vazio (nenhum inimigo nasceu ainda)...
-        if Inimigo.molde_imagem is None:
-            # Criamos a imagem pesada APENAS UMA VEZ
-            Inimigo.molde_imagem = pygame.Surface((50, 50)).convert()
-            Inimigo.molde_imagem.fill((255, 0, 0))
+        # --- CARREGAMENTO FLEXÍVEL ---
+        # Ele tenta carregar do 1 ao 6. Se não achar o 2, ele não trava o jogo!
+        for i in range(1, 7):
+            img_nome = f"aranha{i}.png"
+            caminho_completo = os.path.join(caminho, img_nome)
 
-        # O inimigo atual simplesmente usa a imagem que já está pronta na memória!
-        # Isso acaba com o travamento instantaneamente.
-        self.image = Inimigo.molde_imagem
+            if os.path.exists(caminho_completo):
+                img = pygame.image.load(caminho_completo).convert_alpha()
+                # Dobramos o tamanho (Escala 2x)
+                img = pygame.transform.scale(img, (200, 120))
+                self.frames.append(img)
 
+        # Se não achar NENHUMA imagem, cria um bloco reserva para o jogo não fechar
+        if not self.frames:
+            placeholder = pygame.Surface((100, 60))
+            placeholder.fill((255, 50, 50))
+            self.frames.append(placeholder)
+
+        self.index_anim = 0.0
+        self.image = self.frames[0]
         self.rect = self.image.get_rect()
-        self.vida = 60
 
-        # Nasce fora da tela à direita com distância aleatória
-        self.rect.x = L + random.randint(10, 150)
-        self.rect.bottom = Y
-        self.vel = random.randint(3, 5)
+        # --- POSICIONAMENTO NA ESTRADA (68px para dentro) ---
+        self.rect.x = L + random.randint(100, 600)
+        self.rect.bottom = topo_chao + 68
+
+        self.vida = 60
+        self.vel = random.randint(4, 7)
 
     def update(self):
+        # Movimento para a esquerda
         self.rect.x -= self.vel
+
+        # Animação automática (só ocorre se houver mais de 1 frame)
+        if len(self.frames) > 1:
+            self.index_anim += 0.15
+            if self.index_anim >= len(self.frames):
+                self.index_anim = 0
+            self.image = self.frames[int(self.index_anim)]
+
+        # Se sair da tela, desaparece
         if self.rect.right < 0:
             self.kill()

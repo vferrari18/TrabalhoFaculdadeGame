@@ -1,49 +1,59 @@
-import pygame  # Importa a biblioteca gráfica do Pygame
+import pygame
 
 
-class Cenario:  # Classe responsável por gerenciar o fundo do jogo
-    def __init__(self, L, A):  # Função de criação que recebe a Largura (L) e Altura (A) da tela
-        self.scroll = 0  # Variável que acumula o quanto o cenário já andou para trás
+class Cenario:
+    # ... (O código da classe Cenario que já fizemos continua igual) ...
+    def __init__(self, L, A):
+        self.L = L
+        self.A = A
+        caminho = "assets/scenario/"
+        self.img_ceu = pygame.image.load(caminho + "ceu.png").convert()
+        self.img_ceu = pygame.transform.scale(self.img_ceu, (L, A))
+        self.img_montanha = pygame.image.load(caminho + "montanhas.png").convert_alpha()
+        self.img_montanha = pygame.transform.scale(self.img_montanha, (L, A))
+        self.scroll_ceu = 0
+        self.scroll_montanha = 0
+        self.scroll_chao = 0
 
-        self.ceu = pygame.Surface((L, A)).convert()  # Cria uma imagem em branco do tamanho da tela inteira
-        self.ceu.fill((135, 206, 235))  # Pinta essa imagem com um tom de Azul Céu
+    def desenhar(self, tela, mov_player):
+        self.scroll_ceu += 0.5
+        self.scroll_montanha += mov_player * 0.2
+        self.scroll_chao += mov_player  # O chão é o movimento real (100%)
 
-        # Cria a camada de montanhas para o efeito Parallax.
-        # SRCALPHA permite que a imagem tenha transparência (fundo vazado)
-        self.montanha = pygame.Surface((L, 300), pygame.SRCALPHA).convert_alpha()
-        self.montanha.fill((100, 100, 100, 150))  # Pinta de Cinza com um pouco de transparência
+        # Desenho do Céu e Montanhas (Módulo % L)
+        pos_ceu = self.scroll_ceu % self.L
+        tela.blit(self.img_ceu, (-pos_ceu, 0))
+        tela.blit(self.img_ceu, (self.L - pos_ceu, 0))
 
-    # --- ESTA É A LINHA QUE CORRIGE O ERRO ---
-    # Agora ela aceita o 'self' (padrão), a 'tela', e o 'movimento' enviado pela Main.py
-    def desenhar(self, tela, movimento):
-        self.scroll += movimento  # Soma a velocidade do jogador ao scroll contínuo do cenário
-
-        tela.blit(self.ceu, (0, 0))  # Desenha o céu fixo no fundo, começando da coordenada (0,0)
-
-        # Cria o efeito Parallax (ilusão de profundidade)
-        # O loop repete 3 vezes para desenhar a montanha lado a lado e cobrir buracos
-        for i in range(3):
-            # Matemática do Parallax: A montanha move a 30% (0.3) da velocidade real do jogo.
-            # O símbolo % (módulo) faz a montanha se repetir infinitamente quando sai da tela.
-            pos_x = (i * 800) - (self.scroll * 0.3) % 800
-            tela.blit(self.montanha, (pos_x, 250))  # Desenha a montanha na tela na posição calculada
+        pos_mon = self.scroll_montanha % self.L
+        tela.blit(self.img_montanha, (-pos_mon, 0))
+        tela.blit(self.img_montanha, (self.L - pos_mon, 0))
 
 
-class Chao(pygame.sprite.Sprite):  # Classe do Chão físico onde o jogador pisa (herda de Sprite)
-    def __init__(self, x, y, L):  # Recebe posição x, y e a Largura total do chão
-        super().__init__()  # Inicia as mecânicas de Sprite (como a caixa de colisão)
-        self.image = pygame.Surface((L, 100)).convert()  # Cria um bloco retangular para o chão
-        self.image.fill((139, 69, 19))  # Pinta com a cor Marrom (terra)
+class Chao(pygame.sprite.Sprite):
+    def __init__(self, x, y, L):
+        super().__init__()
+        caminho = "assets/scenario/"
+        self.image_original = pygame.image.load(caminho + "chao.png").convert_alpha()
+        # Ajustado para 224px de altura conforme sua instrução
+        self.image = pygame.transform.scale(self.image_original, (L, 224))
 
-        # Cria a caixa de colisão (rect) e posiciona a ponta superior esquerda (topleft) no x e y informados
+        # O 'y' que passaremos no Main será 544 (768 - 224)
         self.rect = self.image.get_rect(topleft=(x, y))
 
-    def draw(self, tela, scroll_global):  # Função para desenhar o chão
-        # O chão se move a 100% da velocidade (scroll_global) para acompanhar os pés do jogador
-        pos_x = self.rect.x - scroll_global % self.rect.width
+        # Criamos uma "linha de colisão" invisível para os pés
+        # Ela fica 68px abaixo do topo real da imagem
+        self.linha_dos_pes = self.rect.top + 68
 
-        # Desenha o primeiro bloco de chão
+    def draw(self, tela, scroll_global):
+        """
+        Desenha o chão em loop baseado no scroll_chao do cenário
+        """
+        # Calcula a posição X repetindo o desenho (Módulo da largura da imagem)
+        pos_x = -(scroll_global % self.rect.width)
+
+        # Desenha a primeira parte do chão
         tela.blit(self.image, (pos_x, self.rect.y))
 
-        # Desenha um segundo bloco de chão colado logo atrás do primeiro para criar o chão infinito
+        # Desenha a segunda parte logo em seguida para não ter buracos
         tela.blit(self.image, (pos_x + self.rect.width, self.rect.y))
