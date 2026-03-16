@@ -44,6 +44,14 @@ def tela_input_nome(tela):  # Passamos a tela como argumento para ser mais segur
 
 
 def rodar_jogo(nome_player, tela):  # Recebe a tela para não criar várias janelas
+    # --- NOVO: CONFIGURAÇÃO DE ÁUDIO DA FASE ---
+    # Carrega e toca a música da fase (para a música do menu automaticamente)
+    pygame.mixer.music.load("assets/sounds/game_bgm.mp3")
+    pygame.mixer.music.play(-1)
+
+    # Carrega o efeito sonoro do tiro
+    som_tiro = pygame.mixer.Sound("assets/sounds/shoot.mp3")
+    som_tiro.set_volume(0.4)  # Ajusta o volume do efeito
     relogio = pygame.time.Clock()
     p = Jogador()
     f = Cenario(LARGURA, ALTURA)
@@ -65,6 +73,10 @@ def rodar_jogo(nome_player, tela):  # Recebe a tela para não criar várias jane
             if e.type == pygame.QUIT:
                 pygame.quit();
                 sys.exit()
+            if e.type == pygame.MOUSEBUTTONDOWN and estado == "JOGANDO":
+                mx, my = pygame.mouse.get_pos()
+                balas.add(Bala(p.rect.centerx, p.rect.centery, mx, my))
+                som_tiro.play()
             if e.type == pygame.MOUSEBUTTONDOWN and estado == "JOGANDO":
                 mx, my = pygame.mouse.get_pos()
                 balas.add(Bala(p.rect.centerx, p.rect.centery, mx, my))

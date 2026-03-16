@@ -37,6 +37,12 @@ def menu_principal():
     LARGURA, ALTURA = 1365, 768
     tela = pygame.display.set_mode((LARGURA, ALTURA))
 
+    # --- NOVO: LÓGICA DE MÚSICA DO MENU ---
+    pygame.mixer.music.load("assets/sounds/menu_bgm.mp3")
+    pygame.mixer.music.set_volume(0.5)  # Volume em 50%
+    pygame.mixer.music.play(-1)  # O parâmetro -1 faz a música tocar em loop infinito
+    # --------------------------------------
+
     try:
         caminho_menu = "assets/menu/menu_bg.png"
         fundo = pygame.image.load(caminho_menu).convert()
