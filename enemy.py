@@ -10,14 +10,12 @@ class Inimigo(pygame.sprite.Sprite):
         self.frames = []
 
         # --- CARREGAMENTO FLEXÍVEL ---
-        # Ele tenta carregar do 1 ao 6. Se não achar o 2, ele não trava o jogo!
         for i in range(1, 7):
             img_nome = f"aranha{i}.png"
             caminho_completo = os.path.join(caminho, img_nome)
 
             if os.path.exists(caminho_completo):
                 img = pygame.image.load(caminho_completo).convert_alpha()
-                # Dobramos o tamanho (Escala 2x)
                 img = pygame.transform.scale(img, (200, 120))
                 self.frames.append(img)
 
@@ -31,7 +29,7 @@ class Inimigo(pygame.sprite.Sprite):
         self.image = self.frames[0]
         self.rect = self.image.get_rect()
 
-        # --- POSICIONAMENTO NA ESTRADA (68px para dentro) ---
+        # --- POSICIONAMENTO NA ESTRADA ---
         self.rect.x = L + random.randint(100, 600)
         self.rect.bottom = topo_chao + 68
 

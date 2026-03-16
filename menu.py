@@ -37,10 +37,10 @@ def menu_principal():
     LARGURA, ALTURA = 1365, 768
     tela = pygame.display.set_mode((LARGURA, ALTURA))
 
-    # --- NOVO: LÓGICA DE MÚSICA DO MENU ---
+    # --- LÓGICA DE MÚSICA DO MENU ---
     pygame.mixer.music.load("assets/sounds/menu_bgm.mp3")
     pygame.mixer.music.set_volume(0.5)  # Volume em 50%
-    pygame.mixer.music.play(-1)  # O parâmetro -1 faz a música tocar em loop infinito
+    pygame.mixer.music.play(-1)
     # --------------------------------------
 
     try:
@@ -79,10 +79,9 @@ def menu_principal():
         tela.blit(txt_sair, (btn_sair_rect.centerx - txt_sair.get_width() // 2,
                              btn_sair_rect.centery - txt_sair.get_height() // 2))
 
-        # --- NOVO: Desenho das Teclas no Rodapé ---
+
         teclas_texto = "CONTROLES - WASD: MOVER | ESPAÇO: PULAR | MOUSE: ATIRAR"
         img_teclas = fonte_instrucoes.render(teclas_texto, True, (200, 200, 200))
-        # Posiciona centralizado horizontalmente e a 720 pixels de altura
         tela.blit(img_teclas, (LARGURA // 2 - img_teclas.get_width() // 2, 735))
 
         for e in pygame.event.get():

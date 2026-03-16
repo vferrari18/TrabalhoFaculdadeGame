@@ -1,7 +1,6 @@
 import pygame
 import sys
 import random
-# Importando as funções dos seus outros arquivos
 from menu import menu_principal, exibir_ranking
 from player import Jogador
 from cenario import Cenario, Chao
@@ -13,7 +12,7 @@ from score_manager import salvar_score
 LARGURA, ALTURA = 1365, 768
 
 
-def tela_input_nome(tela):  # Passamos a tela como argumento para ser mais seguro
+def tela_input_nome(tela):
     nome = ""
     fonte = pygame.font.SysFont("Arial", 40, bold=True)
     rodando_input = True
@@ -33,25 +32,23 @@ def tela_input_nome(tela):  # Passamos a tela como argumento para ser mais segur
                 sys.exit()
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_RETURN:
-                    if len(nome) > 0: return nome  # Só sai se tiver digitado algo
+                    if len(nome) > 0: return nome
                 elif e.key == pygame.K_BACKSPACE:
                     nome = nome[:-1]
                 else:
-                    if len(nome) < 12:  # Limite de caracteres
+                    if len(nome) < 12:
                         nome += e.unicode
 
         pygame.display.update()
 
 
-def rodar_jogo(nome_player, tela):  # Recebe a tela para não criar várias janelas
-    # --- NOVO: CONFIGURAÇÃO DE ÁUDIO DA FASE ---
-    # Carrega e toca a música da fase (para a música do menu automaticamente)
+def rodar_jogo(nome_player, tela):
     pygame.mixer.music.load("assets/sounds/game_bgm.mp3")
     pygame.mixer.music.play(-1)
 
     # Carrega o efeito sonoro do tiro
     som_tiro = pygame.mixer.Sound("assets/sounds/shoot.mp3")
-    som_tiro.set_volume(0.4)  # Ajusta o volume do efeito
+    som_tiro.set_volume(0.4)
     relogio = pygame.time.Clock()
     p = Jogador()
     f = Cenario(LARGURA, ALTURA)
@@ -61,7 +58,7 @@ def rodar_jogo(nome_player, tela):  # Recebe a tela para não criar várias jane
 
     spawn_timer = 0
     score = 0
-    tempo_fase = 40000  # 40 segundos
+    tempo_fase = 40000
     estado = "JOGANDO"
     fonte_hud = pygame.font.SysFont("Arial", 24, bold=True)
 
@@ -82,7 +79,7 @@ def rodar_jogo(nome_player, tela):  # Recebe a tela para não criar várias jane
                 balas.add(Bala(p.rect.centerx, p.rect.centery, mx, my))
             if e.type == pygame.MOUSEBUTTONDOWN and estado != "JOGANDO":
                 salvar_score(nome_player, score)
-                return  # Volta para o Main (que chamará o menu)
+                return
 
         if estado == "JOGANDO":
             tempo_fase -= dt
@@ -92,22 +89,21 @@ def rodar_jogo(nome_player, tela):  # Recebe a tela para não criar várias jane
 
             p.update([chao])
 
-            # --- NOVA CÂMERA DINÂMICA ---
             meio_tela = LARGURA // 2
 
-            if p.vel_x > 0:  # Se o jogador estiver indo para a direita
-                mov = p.vel_x  # O CENÁRIO SEMPRE SE MOVE
+            if p.vel_x > 0:
+                mov = p.vel_x
 
                 # O jogador só avança na tela se ainda não chegou no meio
                 if p.rect.centerx < meio_tela:
                     p.rect.x += p.vel_x
                 else:
-                    p.rect.centerx = meio_tela  # Trava no meio, mas o 'mov' continua empurrando o fundo
+                    p.rect.centerx = meio_tela
 
-            elif p.vel_x < 0:  # Se o jogador estiver indo para a esquerda
-                p.rect.x += p.vel_x  # Ele anda normalmente para trás
+            elif p.vel_x < 0:
+                p.rect.x += p.vel_x
                 if p.rect.left < 0:
-                    p.rect.left = 0  # Mas o cenário NÃO se move para a esquerda (padrão Metal Slug)
+                    p.rect.left = 0
             # -----------------------------
 
             # Spawn Inimigos
@@ -134,7 +130,7 @@ def rodar_jogo(nome_player, tela):  # Recebe a tela para não criar várias jane
 
         # DESENHO
         f.desenhar(tela, mov)
-        chao.draw(tela, f.scroll_chao) # Agora usamos o scroll específico do chão
+        chao.draw(tela, f.scroll_chao)
         for b in balas: tela.blit(b.image, b.rect)
         inimigos.draw(tela)
         p.draw(tela)
@@ -155,12 +151,11 @@ def rodar_jogo(nome_player, tela):  # Recebe a tela para não criar várias jane
 
 def main():
     pygame.init()
-    # Criamos a tela uma única vez aqui na Main
     tela_global = pygame.display.set_mode((LARGURA, ALTURA))
     pygame.display.set_caption("Firefall 2D - UNINTER 2025")
 
-    while True:  # O Loop que impede o "Exit Code 0"
-        escolha = menu_principal()  # O menu roda usando a tela global internamente
+    while True:
+        escolha = menu_principal()
 
         if escolha == "jogar":
             nome = tela_input_nome(tela_global)

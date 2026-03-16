@@ -2,7 +2,6 @@ import pygame
 
 
 class Cenario:
-    # ... (O código da classe Cenario que já fizemos continua igual) ...
     def __init__(self, L, A):
         self.L = L
         self.A = A
@@ -18,7 +17,7 @@ class Cenario:
     def desenhar(self, tela, mov_player):
         self.scroll_ceu += 0.5
         self.scroll_montanha += mov_player * 0.2
-        self.scroll_chao += mov_player  # O chão é o movimento real (100%)
+        self.scroll_chao += mov_player
 
         # Desenho do Céu e Montanhas (Módulo % L)
         pos_ceu = self.scroll_ceu % self.L
@@ -35,25 +34,11 @@ class Chao(pygame.sprite.Sprite):
         super().__init__()
         caminho = "assets/scenario/"
         self.image_original = pygame.image.load(caminho + "chao.png").convert_alpha()
-        # Ajustado para 224px de altura conforme sua instrução
         self.image = pygame.transform.scale(self.image_original, (L, 224))
-
-        # O 'y' que passaremos no Main será 544 (768 - 224)
         self.rect = self.image.get_rect(topleft=(x, y))
-
-        # Criamos uma "linha de colisão" invisível para os pés
-        # Ela fica 68px abaixo do topo real da imagem
         self.linha_dos_pes = self.rect.top + 68
 
     def draw(self, tela, scroll_global):
-        """
-        Desenha o chão em loop baseado no scroll_chao do cenário
-        """
-        # Calcula a posição X repetindo o desenho (Módulo da largura da imagem)
         pos_x = -(scroll_global % self.rect.width)
-
-        # Desenha a primeira parte do chão
         tela.blit(self.image, (pos_x, self.rect.y))
-
-        # Desenha a segunda parte logo em seguida para não ter buracos
         tela.blit(self.image, (pos_x + self.rect.width, self.rect.y))
